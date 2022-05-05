@@ -1,0 +1,45 @@
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: dsmcert
+#data:
+#  password: ____
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dsmcert
+  labels:
+    app: dsmcert
+spec:
+  selector:
+    matchLabels:
+      app: dsmcert
+  template:
+    metadata:
+      labels:
+        app: dsmcert
+    spec:
+      containers:
+        - name: dsmcert
+          image: dsmcert:latest
+          imagePullPolicy: Never
+          args:
+            - --url=https://192.168.0.201:5001
+            - --user=cert
+            - --desc=managed-by-dsmcert
+            - --log.level=debug
+          env:
+            - name: DSM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: dsmcert
+          volumeMounts:
+            - name: cert
+              mountPath: /cert
+      volumes:
+        - name: cert
+          secret:
+            secretName: sgmitchell-net-tls
